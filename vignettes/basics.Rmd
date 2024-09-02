@@ -1,0 +1,79 @@
+---
+title: "Getting started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Goals of the package
+
+⚠️ This package is at a very early stage of development ⚠️
+
+The main goal of the package is to ensure validated data loading and basic transformations of discourse in graph structure as introduced in the (sustainability.discourses)[sustainability.discourses] project.
+
+The package will support replication of project results and hopefully supports anyone working with a similar data structure in the future.
+
+`diskurs` is in most cases a thin wrapper or special use case of [tidygraph](https://tidygraph.data-imaginist.com) and [igraph](https://igraph.org).
+
+```{r setup}
+library(diskurs)
+```
+
+# Basic functionality
+
+## Required data format
+
+```{r}
+example_edgelist <- diskurs::edgelist_example
+example_nodelist <- diskurs::nodelist_example
+```
+
+```{r}
+example_edgelist
+```
+
+```{r}
+example_nodelist
+```
+
+## Creating a discourse graph
+
+
+```{r}
+disc_g <- load_discourse_graph(edgelist = example_edgelist, nodelist = example_nodelist)
+disc_g
+```
+
+In many cases, working with the igraph or tidygraph object is advisable
+
+```{r}
+disc_g |> as_igraph()
+```
+
+This makes it possible to use the entire ecosystem provided by igraph...
+
+```{r}
+disc_g |> 
+  as_igraph() |> 
+  plot()
+```
+
+... or tidygraph.
+
+```{r}
+disc_g |> 
+  as_tbl_graph() |> 
+  tidygraph::activate(nodes) |>
+  dplyr::mutate(closeness = tidygraph::centrality_closeness())
+```
+
+
