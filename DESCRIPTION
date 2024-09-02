@@ -1,0 +1,11 @@
+Package: diskurs
+Title: An R Package To Handle Discourse Network Data
+Version: 0.0.0.9000
+Authors@R: 
+    person("Mario", "Angst", , "mario.angst@uzh.ch", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-8297-9827"))
+Description: An R package to handle discourse network data as a bipartite graph of actor nodes, qualified stance edges and statement (belief) nodes.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
