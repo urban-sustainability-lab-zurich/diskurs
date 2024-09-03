@@ -40,6 +40,7 @@ Create a discourse graph object from an edgelist and nodelist:
 
 ``` r
 library(diskurs)
+#> Warning: [S7] Failed to find generic aggregate() in package base
 ```
 
 ``` r
@@ -51,17 +52,18 @@ example_nodelist <- diskurs::nodelist_example
 disc_g <- load_discourse_graph(edgelist = example_edgelist, nodelist = example_nodelist)
 disc_g
 #> <discourse_graph>
-#>  @ nodelist: tibble [5 × 4] (S3: tbl_df/tbl/data.frame)
+#>  @ nodelist  : tibble [5 × 4] (S3: tbl_df/tbl/data.frame)
 #>  $ nodeid: int [1:5] 1 2 3 4 5
 #>  $ name  : chr [1:5] "actor1" "actor2" "actor3" "statement1" ...
 #>  $ label : chr [1:5] "Actor 1" "Actor 2" "Actress 3" "The fascists will lose" ...
 #>  $ mode  : chr [1:5] "actor" "actor" "actor" "statement" ...
-#>  @ edgelist: tibble [7 × 4] (S3: tbl_df/tbl/data.frame)
+#>  @ edgelist  : tibble [7 × 4] (S3: tbl_df/tbl/data.frame)
 #>  $ from     : num [1:7] 1 1 1 1 2 3 3
 #>  $ to       : num [1:7] 4 4 5 4 5 4 5
 #>  $ stance   : chr [1:7] "support" "support" "irrelevant" "support" ...
-#>  $ timestamp: POSIXct[1:7], format: "2012-02-01" "2013-02-01" ...
-#>  @ graph   :Classes 'tbl_graph', 'igraph'  hidden list of 10
+#>  $ timestamp: Date[1:7], format: "2012-02-01" "2013-02-01" ...
+#>  @ aggregated: logi FALSE
+#>  @ graph     :Classes 'tbl_graph', 'igraph'  hidden list of 10
 #>  .. $ : num 5
 #>  .. $ : logi TRUE
 #>  .. $ : num [1:7] 0 0 0 0 1 2 2
@@ -80,8 +82,8 @@ disc_g
 #>  ..  .. ..$ mode  : chr [1:5] "actor" "actor" "actor" "statement" ...
 #>  ..  ..$ :List of 2
 #>  ..  .. ..$ stance   : chr [1:7] "support" "support" "irrelevant" "support" ...
-#>  ..  .. ..$ timestamp: POSIXct[1:7], format: "2012-02-01" ...
-#>  .. $ :<environment: 0x000001f39462d040> 
+#>  ..  .. ..$ timestamp: Date[1:7], format: "2012-02-01" ...
+#>  .. $ :<environment: 0x000002c1015f29a0> 
 #>  .. - attr(*, "active")= chr "nodes"
 ```
 

@@ -1,6 +1,6 @@
 Package: diskurs
 Title: An R Package To Handle Discourse Network Data
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: 
     person("Mario", "Angst", , "mario.angst@uzh.ch", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-8297-9827"))
@@ -16,6 +16,7 @@ Imports:
     igraph,
     lubridate,
     S7,
+    stats,
     tidygraph
 Depends: 
     R (>= 2.10)

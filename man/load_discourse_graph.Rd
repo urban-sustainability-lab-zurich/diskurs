@@ -27,5 +27,5 @@ A discourse graph object
 Load discourse graph from nodelist of actors/ statements and edgelist of expressed stances
 }
 \examples{
-diskurs::load_discourse_graph(diskurs::nodelist,diskurs::edgelist)
+diskurs::load_discourse_graph(diskurs::nodelist_example,diskurs::edgelist_example)
 }

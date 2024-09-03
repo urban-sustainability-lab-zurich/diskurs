@@ -15,7 +15,7 @@ edgelist_example = tibble::tibble(
              "opposition",
              "support",
              "support"),
-  timestamp = lubridate::as_datetime(c("2012-02-01T00:00:00Z",
+  timestamp = lubridate::as_date(c("2012-02-01T00:00:00Z",
                 "2013-02-01T00:00:00Z",
                 "2014-02-01T00:00:00Z",
                 "2014-04-01T00:00:00Z",
@@ -24,5 +24,11 @@ edgelist_example = tibble::tibble(
                 "2016-03-01T00:00:00Z"))
 )
 
+discourse_graph_example <- diskurs::load_discourse_graph(
+  nodelist = nodelist_example,
+  edgelist = edgelist_example
+)
+
 usethis::use_data(nodelist_example, overwrite = TRUE)
 usethis::use_data(edgelist_example, overwrite = TRUE)
+usethis::use_data(discourse_graph_example, overwrite = TRUE)

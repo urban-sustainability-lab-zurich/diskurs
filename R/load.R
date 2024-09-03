@@ -1,16 +1,22 @@
 
 SUPPORTED_STANCE_CLASSES <- c("support","opposition","irrelevant")
 
-# TODO: check timestamp class and set to default terry pratchett birthday if not present
 prop_edgelist_df <- S7::new_property(class = S7::class_data.frame,
                                           validator = function(value){
+                                            # validate correct column names
                                             if (!("from" %in% colnames(value))){
                                               "edgelist must contain a integer column named from"
                                             } else if (!("to" %in% colnames(value))){
                                               "edgelist must contain a integer column named to"
+                                            } else if (all(value$to %in% value$from)) {
+                                              "network must be bipartite. no nodes in edgelist column from may be in column to"
                                             } else if (!("stance" %in% colnames(value))){
                                               "edgelist must contain a character column named stance"
-                                            } else if (!(is.numeric(value$from))){
+                                            } else if (!("timestamp" %in% colnames(value))){
+                                              "edgelist must contain a date column named timestamp"
+                                            }
+                                            # validate correct column types
+                                            else if (!(is.numeric(value$from))){
                                               "edgelist column from must be a list of node ids as integers"
                                             } else if (!(is.numeric(value$to))){
                                               "edgelist column to must be a list of node ids as integers"
@@ -19,11 +25,11 @@ prop_edgelist_df <- S7::new_property(class = S7::class_data.frame,
                                             } else if(!(all(value$stance %in% SUPPORTED_STANCE_CLASSES))){
                                               glue::glue('Only stance classes {paste(SUPPORTED_STANCE_CLASSES, collapse = ", ")}
                                                          are supported')
-                                            } #else if("timestamp" %in% colnames(value)){
-                                              #if(!(lubridate::is.Date(value$timestamp))){
-                                              #  "timestamp needs to be of class date"
-                                              #}
-                                            #}
+                                            } else if("timestamp" %in% colnames(value)){
+                                              if(!(lubridate::is.Date(value$timestamp))){
+                                                "timestamp needs to be of class date. maybe convert with lubridate::as_date()?"
+                                              }
+                                            }
                                           }
                                      )
 
@@ -38,6 +44,8 @@ prop_nodelist_df <- S7::new_property(class = S7::class_data.frame,
                                          "nodelist must contain a integer column named nodeid"
                                        } else if (!("name" %in% colnames(value))){
                                          "nodelist must contain a integer column named name"
+                                       } else if (all(duplicated(value$name))){
+                                         "all entries in nodelist column name must be unique"
                                        } else if (!("label" %in% colnames(value))){
                                          "nodelist must contain a character column named label"
                                        } else if (!("mode" %in% colnames(value))){
@@ -58,14 +66,49 @@ discourse_graph <- S7::new_class(name = "discourse_graph",
                                  properties = list(
                                    nodelist = prop_nodelist_df,
                                    edgelist = prop_edgelist_df,
+                                   aggregated = S7::new_property(S7::class_logical, default = FALSE),
                                    graph = S7::new_property(
+                                     class = S7::new_S3_class("tbl_graph"),
                                      getter = function(self){
                                        tidygraph::tbl_graph(nodes = self@nodelist,
                                                             edges = self@edgelist,
                                                             directed = TRUE)
+                                     },
+                                     setter = function(self,value){
+                                       self@edgelist <- get_edgelist(value)
+                                       self@nodelist <- get_nodelist(value)
+                                       self
                                      }
                                    )
                                  ))
+
+# the generic for getting edgelists from graphs, with one function argument g:
+get_edgelist <- S7::new_generic("get_edgelist","g")
+
+S7::method(get_edgelist, discourse_graph) <- function(g){
+  g@edgelist
+}
+
+S7::method(get_edgelist, S7::new_S3_class("tbl_graph")) <- function(g){
+  tbl_g |>
+    tidygraph::activate(edges) |>
+    tidygraph::as_tibble()
+}
+
+# the generic for getting nodelists from graphs, with one function argument g:
+get_nodelist <- S7::new_generic("get_nodelist","g")
+
+# the method for discourse_graph
+S7::method(get_nodelist, discourse_graph) <- function(g){
+  g@nodelist
+}
+
+S7::method(get_nodelist, S7::new_S3_class("tbl_graph")) <- function(g){
+  tbl_g |>
+    tidygraph::activate(nodes) |>
+    tidygraph::as_tibble()
+}
+
 
 #' Load discourse graph from nodelist of actors/ statements and edgelist of expressed stances
 #'
@@ -83,7 +126,7 @@ discourse_graph <- S7::new_class(name = "discourse_graph",
 #' @return A discourse graph object
 #' @export
 #'
-#' @examples diskurs::load_discourse_graph(diskurs::nodelist,diskurs::edgelist)
+#' @examples diskurs::load_discourse_graph(diskurs::nodelist_example,diskurs::edgelist_example)
 load_discourse_graph <- function(nodelist, edgelist){
     return(
       discourse_graph(
@@ -127,4 +170,21 @@ get_tbl_graph <- S7::new_generic("get_tbl_graph","g")
 #' @examples
 S7::method(get_tbl_graph, discourse_graph) <- function(g){
   g@graph
+}
+
+#' Check if object is of type discourse_graph
+#'
+#' @param disc_g
+#'
+#' @return boolean
+#' @export
+#'
+#' @examples is.discourse_graph(diskurs::discourse_graph_example)
+is.discourse_graph <- function(object){
+  if ("discourse_graph" %in% class(object)){
+    return(TRUE)
+  }
+  else{
+    return(FALSE)
+  }
 }

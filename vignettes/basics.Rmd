@@ -36,7 +36,8 @@ library(diskurs)
 example_edgelist <- diskurs::edgelist_example
 example_nodelist <- diskurs::nodelist_example
 ```
-dfas
+
+
 ```{r}
 example_edgelist
 ```
@@ -46,7 +47,6 @@ example_nodelist
 ```
 
 ## Creating a discourse graph
-
 
 ```{r}
 disc_g <- load_discourse_graph(edgelist = example_edgelist, nodelist = example_nodelist)
@@ -76,4 +76,15 @@ disc_g |>
   dplyr::mutate(closeness = tidygraph::centrality_closeness())
 ```
 
+## Aggregating a graph
+
+Aggregating a discourse graph here means combining stance edges to weighted edges over time, possibly also keeping only the most prevalent category.
+
+```{r}
+disc_g |> aggregate_discourse_graph()
+```
+
+```{r}
+disc_g |> aggregate_discourse_graph(keep_only_highest = TRUE) |>  get_igraph() |> plot()
+```
 
