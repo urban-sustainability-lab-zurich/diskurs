@@ -1,0 +1,57 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# diskurs
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+diskurs (German for discourse) is an R package to handle data on discourse networks in a very specific form.
+
+The main goal of the package is to ensure validated data loading and basic transformations of discourse in graph structure as introduced in the (sustainability.discourses)[sustainability.discourses] project.
+
+At the moment, it mainly exists to facilitate the reproduction of analyses conducted within the [sustainability.discourses](sustainability.discourses.ch) project. The eventual goal is to hopefully support anyone working with a similar data structure in the future.
+
+`diskurs` is in most cases a thin wrapper or special use case around [tidygraph](https://tidygraph.data-imaginist.com) and [igraph](https://igraph.org).
+
+## Installation
+
+You can install the development version of diskurs from [the r-universe builds of diskurs](https://urban-sustainability-lab-zurich.r-universe.dev/diskurs) with:
+
+``` r
+install.packages('diskurs', repos = c('https://urban-sustainability-lab-zurich.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
+## Getting started
+
+Create a discourse graph object from an edgelist and nodelist:
+
+```{r setup}
+library(diskurs)
+```
+
+```{r}
+example_edgelist <- diskurs::edgelist_example
+example_nodelist <- diskurs::nodelist_example
+```
+
+```{r}
+disc_g <- load_discourse_graph(edgelist = example_edgelist, nodelist = example_nodelist)
+disc_g
+```
+
+More functionality is documented in the vignettes on:
+
+- [Basic functionality](vignettes/basics.html)
