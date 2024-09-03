@@ -15,6 +15,7 @@ Imports:
     glue,
     igraph,
     lubridate,
+    rlang,
     S7,
     stats,
     tidygraph

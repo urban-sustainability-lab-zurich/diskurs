@@ -90,7 +90,7 @@ S7::method(get_edgelist, discourse_graph) <- function(g){
 }
 
 S7::method(get_edgelist, S7::new_S3_class("tbl_graph")) <- function(g){
-  tbl_g |>
+  g |>
     tidygraph::activate(edges) |>
     tidygraph::as_tibble()
 }
@@ -104,7 +104,7 @@ S7::method(get_nodelist, discourse_graph) <- function(g){
 }
 
 S7::method(get_nodelist, S7::new_S3_class("tbl_graph")) <- function(g){
-  tbl_g |>
+  g |>
     tidygraph::activate(nodes) |>
     tidygraph::as_tibble()
 }
@@ -174,7 +174,7 @@ S7::method(get_tbl_graph, discourse_graph) <- function(g){
 
 #' Check if object is of type discourse_graph
 #'
-#' @param disc_g
+#' @param object The object to evaluate
 #'
 #' @return boolean
 #' @export

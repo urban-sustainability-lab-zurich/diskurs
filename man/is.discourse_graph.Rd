@@ -7,7 +7,7 @@
 is.discourse_graph(object)
 }
 \arguments{
-\item{disc_g}{}
+\item{object}{The object to evaluate}
 }
 \value{
 boolean
