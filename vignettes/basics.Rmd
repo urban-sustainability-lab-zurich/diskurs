@@ -36,7 +36,7 @@ library(diskurs)
 example_edgelist <- diskurs::edgelist_example
 example_nodelist <- diskurs::nodelist_example
 ```
-
+dfas
 ```{r}
 example_edgelist
 ```
@@ -56,14 +56,14 @@ disc_g
 In many cases, working with the igraph or tidygraph object is advisable
 
 ```{r}
-disc_g |> as_igraph()
+disc_g |> get_igraph()
 ```
 
 This makes it possible to use the entire ecosystem provided by igraph...
 
 ```{r}
 disc_g |> 
-  as_igraph() |> 
+  get_igraph() |> 
   plot()
 ```
 
@@ -71,7 +71,7 @@ disc_g |>
 
 ```{r}
 disc_g |> 
-  as_tbl_graph() |> 
+  get_tbl_graph() |> 
   tidygraph::activate(nodes) |>
   dplyr::mutate(closeness = tidygraph::centrality_closeness())
 ```

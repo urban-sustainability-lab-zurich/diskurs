@@ -93,32 +93,38 @@ load_discourse_graph <- function(nodelist, edgelist){
     )
   }
 
-as_igraph <- S7::new_generic("as_igraph","g")
+# the generic for getting igraph, with one function argument g:
+get_igraph <- S7::new_generic("get_igraph","g")
+
+# The method implementation of get_igraph for the discourse_graph class:
 
 #' Extract igraph object from discourse graph
 #'
-#' @name as_igraph
+#' @name get_igraph
 #' @param g The discourse graph to extract igraph object from
 #'
 #' @return An object of class igraph
 #' @export
 #'
 #' @examples
-S7::method(as_igraph, discourse_graph) <- function(g){
+S7::method(get_igraph, discourse_graph) <- function(g){
   g@graph |> tidygraph::as.igraph()
 }
 
-as_tbl_graph <- S7::new_generic("as_tbl_graph","g")
+# the generic for getting a tbl_graph, with one function argument g:
+get_tbl_graph <- S7::new_generic("get_tbl_graph","g")
+
+# The method implementation of get_tbl_graph for the discourse_graph class:
 
 #' Extract tidygraph object from discourse graph
 #'
 #' @param g The discourse graph to extract tidygraph object from
-#' @name as_tbl_graph
+#' @name get_tbl_graph
 #'
 #' @return An object of class tidygraph
 #' @export
 #'
 #' @examples
-S7::method(as_tbl_graph, discourse_graph) <- function(g){
+S7::method(get_tbl_graph, discourse_graph) <- function(g){
   g@graph
 }
