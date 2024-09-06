@@ -188,3 +188,70 @@ is.discourse_graph <- function(object){
     return(FALSE)
   }
 }
+
+#' Print method for discourse graph objects
+#'
+#' @param x A discourse graph object
+#'
+#' @return
+#' @export
+#'
+#' @examples
+S7::method(print,discourse_graph) <- function(x){
+  if(x@aggregated){
+    aggregated_status <- " aggregated"
+  } else {
+    aggregated_status <- ""
+  }
+  print(
+    glue::glue("\n   ---------------------------------------- \n A{aggregated_status} discourse graph with {nrow(x@nodelist[x@nodelist$mode == 'actor',])} actors and {nrow(x@nodelist[x@nodelist$mode == 'statement',])}
+               statements \n   ----------------------------------------")
+  )
+  print(x@graph)
+}
+
+#' Get incidence matrix of discourse graph
+#'
+#' @param disc_g A discourse graph object
+#' @param make_binary Logical. Dichotomize/ make binary? Defaults to FALSE, which returns a valued matrix with the number of stances in entries.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_incmat <- function(disc_g, make_binary = FALSE){
+  g <- disc_g@graph
+  edgelist <-
+    g |>
+    tidygraph::activate(edges) |>
+    dplyr::mutate(actor_id = tidygraph::.N()$name[from]) |>
+    dplyr::mutate(belief_id = tidygraph::.N()$name[to]) |>
+    tidygraph::as_tibble() |>
+    dplyr::group_by(actor_id,belief_id) |>
+    dplyr::summarise(
+      n_stances = dplyr::n()
+    )
+  unique_actors <- g |>
+    tidygraph::activate(nodes) |>
+    dplyr::filter(mode == "actor") |>
+    dplyr::pull(name)
+  unique_statements <- g |>
+    tidygraph::activate(nodes) |>
+    dplyr::filter(mode == "statement") |>
+    dplyr::pull(name)
+  incmat <- matrix(0,
+                   nrow = length(unique_actors),
+                   ncol = length(unique_statements),
+                   dimnames = list(
+                     unique_actors,
+                     unique_statements
+                   ))
+  if(make_binary){
+    edgelist$n_stances <- 1
+  }
+  incmat[cbind(
+    edgelist$actor_id,
+    edgelist$belief_id)] <- edgelist$n_stances
+  #remove isolates?
+  return(incmat)
+}

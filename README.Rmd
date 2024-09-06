@@ -108,14 +108,13 @@ disc_g |> aggregate_discourse_graph()
 disc_g |> aggregate_discourse_graph(keep_only_highest = TRUE) |> plot()
 ```
 
-## Time slice of discourse graph
+## Time slices of discourse graphs
 
 ```{r}
 start_date <- "2012-01-01"
 end_date <- "2014-06-06"
 disc_g |> 
-  time_slice_graph(start_date = start_date, end_date = end_date) |> 
-  get_tbl_graph()
+  time_slice_graph(start_date = start_date, end_date = end_date)
 ```
 
 ```{r, warning=FALSE}
@@ -123,3 +122,27 @@ disc_g |>
   time_slice_graph(start_date = start_date, end_date = end_date) |> 
   plot()
 ```
+
+You can also create a list of time sliced graphs directly.
+
+```{r}
+date_range <- c(start_date, end_date)
+time_window <- months(48)
+```
+
+```{r}
+disc_g |> 
+  time_sliced_graph_list(time_window = time_window,
+                         date_range = date_range,
+                         step_interval = "year")
+```
+
+## Explode the graph
+
+You can explodes all statement nodes into all existing combinations of statements and stances.
+Easier to understand with an illustration:
+
+```{r, warning=FALSE}
+disc_g |> explode_graph() |> plot()
+```
+
