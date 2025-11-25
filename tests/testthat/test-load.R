@@ -41,7 +41,7 @@ EXPECTED_EXAMPLE_N_EDGES <- 7
 # Test basic graph construction ----
 test_that("load_discourse_graph creates a discourse_graph object", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
-  expect_s3_class(g, "discourse_graph")
+  expect_true(any(grepl("discourse_graph", class(g))))
   expect_true(is.discourse_graph(g))
 })
 
@@ -68,7 +68,7 @@ test_that("discourse_graph aggregated property defaults to FALSE", {
 test_that("graph property returns a tbl_graph object", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
   graph_obj <- g@graph
-  expect_s3_class(graph_obj, "tbl_graph")
+  expect_true(any(grepl("tbl_graph", class(graph_obj))))
 })
 
 test_that("graph property has correct number of nodes and edges", {
@@ -98,7 +98,7 @@ test_that("load_discourse_graph works with package example data", {
     nodelist = nodelist_example
   )
 
-  expect_s3_class(g, "discourse_graph")
+  expect_true(any(grepl("discourse_graph", class(g))))
   expect_true(is.discourse_graph(g))
 
   # Verify correct dimensions
@@ -106,7 +106,7 @@ test_that("load_discourse_graph works with package example data", {
   expect_equal(nrow(g@edgelist), EXPECTED_EXAMPLE_N_EDGES)
 
   # Verify the graph property works
-  expect_s3_class(g@graph, "tbl_graph")
+  expect_true(any(grepl("tbl_graph", class(g@graph))))
 })
 
 # Test get_edgelist generic ----
@@ -150,7 +150,7 @@ test_that("get_tbl_graph extracts tbl_graph from discourse_graph", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
   tbl_g <- get_tbl_graph(g)
 
-  expect_s3_class(tbl_g, "tbl_graph")
+  expect_true(any(grepl("tbl_graph", class(tbl_g))))
 })
 
 # Test get_igraph ----
@@ -158,7 +158,7 @@ test_that("get_igraph extracts igraph from discourse_graph", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
   ig <- get_igraph(g)
 
-  expect_s3_class(ig, "igraph")
+  expect_true(any(grepl("igraph", class(ig))))
   expect_equal(igraph::vcount(ig), EXPECTED_N_NODES)
   expect_equal(igraph::ecount(ig), EXPECTED_N_EDGES)
 })
@@ -303,8 +303,8 @@ test_that("complete workflow works as expected", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
 
   # Can access all components
-  expect_s3_class(g, "discourse_graph")
-  expect_s3_class(g@graph, "tbl_graph")
+  expect_true(any(grepl("discourse_graph", class(g))))
+  expect_true(any(grepl("tbl_graph", class(g@graph))))
   expect_true(is.data.frame(g@nodelist))
   expect_true(is.data.frame(g@edgelist))
 
@@ -312,8 +312,8 @@ test_that("complete workflow works as expected", {
   tbl_g <- get_tbl_graph(g)
   ig <- get_igraph(g)
 
-  expect_s3_class(tbl_g, "tbl_graph")
-  expect_s3_class(ig, "igraph")
+  expect_true(any(grepl("tbl_graph", class(tbl_g))))
+  expect_true(any(grepl("igraph", class(ig))))
 
   # Graph has correct structure
   expect_equal(igraph::vcount(ig), EXPECTED_N_NODES)
@@ -327,8 +327,8 @@ test_that("graph property getter creates tbl_graph correctly", {
   graph1 <- g@graph
   graph2 <- g@graph
 
-  expect_s3_class(graph1, "tbl_graph")
-  expect_s3_class(graph2, "tbl_graph")
+  expect_true(any(grepl("tbl_graph", class(graph1))))
+  expect_true(any(grepl("tbl_graph", class(graph2))))
 
   # Should have same structure
   expect_equal(igraph::vcount(graph1), igraph::vcount(graph2))

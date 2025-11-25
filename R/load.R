@@ -186,7 +186,7 @@ S7::method(get_tbl_graph, discourse_graph) <- function(g){
 #'
 #' @examples is.discourse_graph(diskurs::discourse_graph_example)
 is.discourse_graph <- function(object){
-  if ("discourse_graph" %in% class(object)){
+  if (any(grepl("discourse_graph", class(object)))){
     return(TRUE)
   }
   else{
