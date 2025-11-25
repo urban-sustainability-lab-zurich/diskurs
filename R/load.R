@@ -1,4 +1,7 @@
 
+# Define tbl_graph S3 class for S7 compatibility
+class_tbl_graph <- S7::new_S3_class("tbl_graph")
+
 SUPPORTED_STANCE_CLASSES <- c("support","opposition","irrelevant")
 
 prop_edgelist_df <- S7::new_property(class = S7::class_data.frame,
@@ -68,15 +71,17 @@ discourse_graph <- S7::new_class(name = "discourse_graph",
                                    edgelist = prop_edgelist_df,
                                    aggregated = S7::new_property(S7::class_logical, default = FALSE),
                                    graph = S7::new_property(
-                                     class = S7::new_S3_class("tbl_graph"),
+                                     class = S7::class_any,
                                      getter = function(self){
                                        tidygraph::tbl_graph(nodes = self@nodelist,
                                                             edges = self@edgelist,
                                                             directed = TRUE)
                                      },
                                      setter = function(self,value){
-                                       self@edgelist <- get_edgelist(value)
-                                       self@nodelist <- get_nodelist(value)
+                                       if (!is.null(value)) {
+                                         self@edgelist <- get_edgelist(value)
+                                         self@nodelist <- get_nodelist(value)
+                                       }
                                        self
                                      }
                                    )
@@ -89,7 +94,7 @@ S7::method(get_edgelist, discourse_graph) <- function(g){
   g@edgelist
 }
 
-S7::method(get_edgelist, S7::new_S3_class("tbl_graph")) <- function(g){
+S7::method(get_edgelist, class_tbl_graph) <- function(g){
   g |>
     tidygraph::activate(edges) |>
     tidygraph::as_tibble()
@@ -103,7 +108,7 @@ S7::method(get_nodelist, discourse_graph) <- function(g){
   g@nodelist
 }
 
-S7::method(get_nodelist, S7::new_S3_class("tbl_graph")) <- function(g){
+S7::method(get_nodelist, class_tbl_graph) <- function(g){
   g |>
     tidygraph::activate(nodes) |>
     tidygraph::as_tibble()
