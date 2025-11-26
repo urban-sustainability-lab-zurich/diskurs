@@ -281,7 +281,7 @@ S7::method(print,discourse_graph) <- function(x){
     glue::glue("\n   ---------------------------------------- \n A{aggregated_status} discourse graph with {nrow(x@nodelist[x@nodelist$mode == 'actor',])} actors and {nrow(x@nodelist[x@nodelist$mode == 'statement',])}
                statements \n   ----------------------------------------")
   )
-  print(S7::S7_data(x))
+  print(extract_tbl_graph(x))
 }
 
 #' Get incidence matrix of discourse graph

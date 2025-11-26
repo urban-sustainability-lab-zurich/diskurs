@@ -283,6 +283,20 @@ test_that("print method works for discourse_graph", {
   expect_output(print(g), "statements")
 })
 
+test_that("print method shows tbl_graph structure", {
+  g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
+
+  # Should show tbl_graph style output with tibbles
+  expect_output(print(g), "tbl_graph")
+  expect_output(print(g), "Node Data")
+  expect_output(print(g), "Edge Data")
+  # Should show column names
+  expect_output(print(g), "nodeid")
+  expect_output(print(g), "name")
+  expect_output(print(g), "from")
+  expect_output(print(g), "to")
+})
+
 # Test is.discourse_graph ----
 test_that("is.discourse_graph correctly identifies discourse_graph objects", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
