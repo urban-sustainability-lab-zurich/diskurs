@@ -79,21 +79,38 @@ In many cases, working with the igraph or tidygraph object is advisable
 disc_g |> get_igraph()
 ```
 
-This makes it possible to use the entire ecosystem provided by igraph...
+This makes it possible to use the entire ecosystem provided by igraph:
 
 ```{r}
-disc_g |> 
-  get_igraph() |> 
+disc_g |>
+  get_igraph() |>
   plot()
 ```
 
-... or tidygraph.
+Or tidygraph. You can extract tidygraph's tbl_graph object and then use its verbs:
 
 ```{r}
-disc_g |> 
-  get_tbl_graph() |> 
+disc_g |>
+  get_tbl_graph() |>
   tidygraph::activate(nodes) |>
   dplyr::mutate(closeness = tidygraph::centrality_closeness())
+```
+
+Or maybe even better, you can use tidygraph verbs directly on discourse_graph objects:
+
+```{r}
+disc_g |>
+  tidygraph::activate(nodes) |>
+  dplyr::filter(mode == "actor") |>
+  tidygraph::activate(edges) |>
+  dplyr::filter(stance == "support")
+
+disc_g |>
+  tidygraph::activate(nodes) |>
+  dplyr::mutate(
+    degree = tidygraph::centrality_degree(),
+    name_upper = toupper(name)
+  )
 ```
 
 ## Aggregating a graph
@@ -113,13 +130,13 @@ disc_g |> aggregate_discourse_graph(keep_only_highest = TRUE) |> plot()
 ```{r}
 start_date <- "2012-01-01"
 end_date <- "2014-06-06"
-disc_g |> 
+disc_g |>
   time_slice_graph(start_date = start_date, end_date = end_date)
 ```
 
 ```{r, warning=FALSE}
-disc_g |> 
-  time_slice_graph(start_date = start_date, end_date = end_date) |> 
+disc_g |>
+  time_slice_graph(start_date = start_date, end_date = end_date) |>
   plot()
 ```
 
@@ -131,7 +148,7 @@ time_window <- months(48)
 ```
 
 ```{r}
-disc_g |> 
+disc_g |>
   time_sliced_graph_list(time_window = time_window,
                          date_range = date_range,
                          step_interval = "year")
@@ -145,4 +162,3 @@ Easier to understand with an illustration:
 ```{r, warning=FALSE}
 disc_g |> explode_graph() |> plot()
 ```
-

@@ -18,7 +18,7 @@ S7::method(plot,discourse_graph) <- function(disc_g,
                                  edge_alpha = 1,
                                  arrow_start_cap = 6,
                                  arrow_end_cap = 10){
-  tbl_g <- disc_g@graph
+  tbl_g <- extract_tbl_graph(disc_g)
   # start viz
   viz <-
     tbl_g |>
@@ -58,7 +58,7 @@ S7::method(plot,discourse_graph) <- function(disc_g,
   if(!label_nodes){
     viz <-
       viz +
-      ggraph::geom_node_point(aes(color = mode))
+      ggraph::geom_node_point(ggplot2::aes(color = mode))
   }
   else{
     viz <-

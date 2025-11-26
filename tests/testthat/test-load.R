@@ -65,21 +65,20 @@ test_that("discourse_graph aggregated property defaults to FALSE", {
 })
 
 # Test graph property getter ----
-test_that("graph property returns a tbl_graph object", {
+test_that("discourse_graph inherits from tbl_graph", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
-  graph_obj <- g@graph
-  expect_true(any(grepl("tbl_graph", class(graph_obj))))
+  # The object itself should be a tbl_graph now
+  expect_true(any(grepl("tbl_graph", class(g))))
 })
 
-test_that("graph property has correct number of nodes and edges", {
+test_that("discourse_graph has correct number of nodes and edges", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
-  graph_obj <- g@graph
 
-  nodes <- graph_obj |>
+  nodes <- g |>
     tidygraph::activate(nodes) |>
     tidygraph::as_tibble()
 
-  edges <- graph_obj |>
+  edges <- g |>
     tidygraph::activate(edges) |>
     tidygraph::as_tibble()
 
@@ -105,8 +104,8 @@ test_that("load_discourse_graph works with package example data", {
   expect_equal(nrow(g@nodelist), EXPECTED_EXAMPLE_N_NODES)
   expect_equal(nrow(g@edgelist), EXPECTED_EXAMPLE_N_EDGES)
 
-  # Verify the graph property works
-  expect_true(any(grepl("tbl_graph", class(g@graph))))
+  # Verify the object inherits from tbl_graph
+  expect_true(any(grepl("tbl_graph", class(g))))
 })
 
 # Test get_edgelist generic ----
@@ -120,7 +119,7 @@ test_that("get_edgelist returns edgelist from discourse_graph", {
 
 test_that("get_edgelist works on tbl_graph", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
-  tbl_g <- g@graph
+  tbl_g <- get_tbl_graph(g)
   retrieved_edgelist <- get_edgelist(tbl_g)
 
   expect_true(is.data.frame(retrieved_edgelist))
@@ -138,7 +137,7 @@ test_that("get_nodelist returns nodelist from discourse_graph", {
 
 test_that("get_nodelist works on tbl_graph", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
-  tbl_g <- g@graph
+  tbl_g <- get_tbl_graph(g)
   retrieved_nodelist <- get_nodelist(tbl_g)
 
   expect_true(is.data.frame(retrieved_nodelist))
@@ -304,7 +303,7 @@ test_that("complete workflow works as expected", {
 
   # Can access all components
   expect_true(any(grepl("discourse_graph", class(g))))
-  expect_true(any(grepl("tbl_graph", class(g@graph))))
+  expect_true(any(grepl("tbl_graph", class(g))))
   expect_true(is.data.frame(g@nodelist))
   expect_true(is.data.frame(g@edgelist))
 
@@ -320,12 +319,12 @@ test_that("complete workflow works as expected", {
   expect_equal(igraph::ecount(ig), EXPECTED_N_EDGES)
 })
 
-test_that("graph property getter creates tbl_graph correctly", {
+test_that("get_tbl_graph extracts tbl_graph consistently", {
   g <- load_discourse_graph(nodelist = test_nodelist, edgelist = test_edgelist)
 
   # Access graph multiple times - should work consistently
-  graph1 <- g@graph
-  graph2 <- g@graph
+  graph1 <- get_tbl_graph(g)
+  graph2 <- get_tbl_graph(g)
 
   expect_true(any(grepl("tbl_graph", class(graph1))))
   expect_true(any(grepl("tbl_graph", class(graph2))))

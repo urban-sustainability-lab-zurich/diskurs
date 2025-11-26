@@ -17,7 +17,7 @@ aggregate_discourse_graph <- function(disc_g,
     stop("discourse graph is already aggregated")
   }
   else{
-    tbl_g <- disc_g@graph
+    tbl_g <- extract_tbl_graph(disc_g)
     edgelist_agg <-
       tbl_g |>
       tidygraph::activate(edges) |>
@@ -56,7 +56,7 @@ time_slice_graph <- function(disc_g,
                              start_date,
                              end_date){
   if (is.discourse_graph(disc_g)){
-    tbl_g <- disc_g@graph
+    tbl_g <- extract_tbl_graph(disc_g)
     tbl_g_subset <-
       tbl_g |>
       tidygraph::activate(edges) |>
@@ -82,7 +82,7 @@ time_slice_graph <- function(disc_g,
 #'
 #' @examples
 remove_isolates <- function(disc_g){
-  tbl_g <- disc_g@graph
+  tbl_g <- extract_tbl_graph(disc_g)
   tbl_g_noisolates <-
     tbl_g |>
     tidygraph::activate(nodes) |>
@@ -165,7 +165,7 @@ time_sliced_graph_list <- function(disc_g,
 explode_graph <- function(disc_g,
                           stance_subset = SUPPORTED_STANCE_CLASSES){
 
-  g <- disc_g@graph
+  g <- extract_tbl_graph(disc_g)
   edgelist_exploded <-
     g |>
     tidygraph::activate(edges) |>

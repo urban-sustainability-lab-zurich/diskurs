@@ -66,26 +66,49 @@ discourse_nodelist <- S7::new_class("discourse_nodelist",
                                     ))
 
 discourse_graph <- S7::new_class(name = "discourse_graph",
+                                 parent = class_tbl_graph,
                                  properties = list(
                                    nodelist = prop_nodelist_df,
                                    edgelist = prop_edgelist_df,
-                                   aggregated = S7::new_property(S7::class_logical, default = FALSE),
-                                   graph = S7::new_property(
-                                     class = S7::class_any,
-                                     getter = function(self){
-                                       tidygraph::tbl_graph(nodes = self@nodelist,
-                                                            edges = self@edgelist,
-                                                            directed = TRUE)
-                                     },
-                                     setter = function(self,value){
-                                       if (!is.null(value)) {
-                                         self@edgelist <- get_edgelist(value)
-                                         self@nodelist <- get_nodelist(value)
-                                       }
-                                       self
-                                     }
-                                   )
-                                 ))
+                                   aggregated = S7::new_property(S7::class_logical, default = FALSE)
+                                 ),
+                                 constructor = function(nodelist, edgelist, aggregated = FALSE) {
+                                   # Validate inputs before creating graph
+                                   # This ensures our validators run before tbl_graph's internal errors
+                                   nodelist_validation <- prop_nodelist_df$validator(nodelist)
+                                   if (!is.null(nodelist_validation)) {
+                                     stop(nodelist_validation, call. = FALSE)
+                                   }
+                                   edgelist_validation <- prop_edgelist_df$validator(edgelist)
+                                   if (!is.null(edgelist_validation)) {
+                                     stop(edgelist_validation, call. = FALSE)
+                                   }
+
+                                   # Create the underlying tbl_graph
+                                   graph <- tidygraph::tbl_graph(nodes = nodelist,
+                                                                edges = edgelist,
+                                                                directed = TRUE)
+                                   # Create new S7 object wrapping the tbl_graph
+                                   # When called inside constructor, new_object doesn't need the class
+                                   obj <- S7::new_object(graph,
+                                                  nodelist = nodelist,
+                                                  edgelist = edgelist,
+                                                  aggregated = aggregated)
+                                   # Ensure igraph class is in the class vector for proper method dispatch
+                                   # tbl_graph extends igraph, and we need both in the class hierarchy
+                                   if (!"igraph" %in% class(obj)) {
+                                     class(obj) <- c(class(obj)[1:2], "igraph", class(obj)[3])
+                                   }
+                                   obj
+                                 })
+
+# Helper function to extract tbl_graph from discourse_graph with proper classes
+# Internal use only - ensures S7_data() returns usable tbl_graph
+extract_tbl_graph <- function(disc_g) {
+  tbl_g <- S7::S7_data(disc_g)
+  class(tbl_g) <- c("tbl_graph", "igraph")
+  tbl_g
+}
 
 # the generic for getting edgelists from graphs, with one function argument g:
 get_edgelist <- S7::new_generic("get_edgelist","g")
@@ -156,7 +179,52 @@ get_igraph <- S7::new_generic("get_igraph","g")
 #'
 #' @examples
 S7::method(get_igraph, discourse_graph) <- function(g){
-  g@graph |> tidygraph::as.igraph()
+  # Extract the tbl_graph and convert to igraph
+  tbl_g <- S7::S7_data(g)
+  class(tbl_g) <- c("tbl_graph", "igraph")
+  tidygraph::as.igraph(tbl_g)
+}
+
+# Register S3 methods to delegate to underlying tbl_graph for igraph compatibility
+# This is necessary because igraph functions need to access the graph structure
+# through the S7 wrapper
+
+#' @export
+as.igraph.discourse_graph <- function(x, ...) {
+  tidygraph::as.igraph(S7::S7_data(x))
+}
+
+#' @export
+vertex_attr.discourse_graph <- function(graph, name, index = V(graph)) {
+  igraph::vertex_attr(S7::S7_data(graph), name, index)
+}
+
+#' @export
+edge_attr.discourse_graph <- function(graph, name, index = E(graph)) {
+  igraph::edge_attr(S7::S7_data(graph), name, index)
+}
+
+#' @export
+graph_attr.discourse_graph <- function(graph, name) {
+  igraph::graph_attr(S7::S7_data(graph), name)
+}
+
+#' @export
+`vertex_attr<-.discourse_graph` <- function(graph, name, index = V(graph), value) {
+  new_graph <- S7::S7_data(graph)
+  igraph::`vertex_attr<-`(new_graph, name, index, value)
+  graph@nodelist <- get_nodelist(new_graph)
+  S7::S7_data(graph) <- new_graph
+  graph
+}
+
+#' @export
+`edge_attr<-.discourse_graph` <- function(graph, name, index = E(graph), value) {
+  new_graph <- S7::S7_data(graph)
+  igraph::`edge_attr<-`(new_graph, name, index, value)
+  graph@edgelist <- get_edgelist(new_graph)
+  S7::S7_data(graph) <- new_graph
+  graph
 }
 
 # the generic for getting a tbl_graph, with one function argument g:
@@ -174,7 +242,8 @@ get_tbl_graph <- S7::new_generic("get_tbl_graph","g")
 #'
 #' @examples
 S7::method(get_tbl_graph, discourse_graph) <- function(g){
-  g@graph
+  # Return the underlying tbl_graph with proper class structure
+  extract_tbl_graph(g)
 }
 
 #' Check if object is of type discourse_graph
@@ -212,7 +281,7 @@ S7::method(print,discourse_graph) <- function(x){
     glue::glue("\n   ---------------------------------------- \n A{aggregated_status} discourse graph with {nrow(x@nodelist[x@nodelist$mode == 'actor',])} actors and {nrow(x@nodelist[x@nodelist$mode == 'statement',])}
                statements \n   ----------------------------------------")
   )
-  print(x@graph)
+  print(S7::S7_data(x))
 }
 
 #' Get incidence matrix of discourse graph
@@ -225,7 +294,7 @@ S7::method(print,discourse_graph) <- function(x){
 #'
 #' @examples
 get_incmat <- function(disc_g, make_binary = FALSE){
-  g <- disc_g@graph
+  g <- extract_tbl_graph(disc_g)
   edgelist <-
     g |>
     tidygraph::activate(edges) |>

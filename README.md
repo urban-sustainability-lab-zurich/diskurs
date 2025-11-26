@@ -4,6 +4,7 @@
 # diskurs
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 ⚠️ This package is at a very early stage of development ⚠️
@@ -80,26 +81,68 @@ disc_g
 #> A discourse graph with 3 actors and 2
 #>               statements 
 #>   ----------------------------------------
-#> # A tbl_graph: 5 nodes and 7 edges
-#> #
-#> # A directed acyclic multigraph with 1 component
-#> #
-#> # A tibble: 5 × 4
-#>   nodeid name       label                  mode     
-#>    <int> <chr>      <chr>                  <chr>    
-#> 1      1 actor1     Actor 1                actor    
-#> 2      2 actor2     Actor 2                actor    
-#> 3      3 actor3     Actress 3              actor    
-#> 4      4 statement1 The fascists will lose statement
-#> 5      5 statement2 Owls are great         statement
-#> #
-#> # A tibble: 7 × 4
-#>    from    to stance     timestamp 
-#>   <int> <int> <chr>      <date>    
-#> 1     1     4 support    2012-02-01
-#> 2     1     4 support    2013-02-01
-#> 3     1     5 irrelevant 2014-02-01
-#> # ℹ 4 more rows
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0 0 0 1 2 2
+#> 
+#> [[4]]
+#> [1] 3 3 4 3 4 3 4
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support"    "support"    "irrelevant" "support"    "opposition"
+#> [6] "support"    "support"   
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2012-02-01" "2013-02-01" "2014-02-01" "2014-04-01" "2016-02-01"
+#> [6] "2016-02-01" "2016-03-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0c8a65de0>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 ```
 
 Let’s look at it:
@@ -114,36 +157,37 @@ In many cases, working with the igraph or tidygraph object is advisable
 
 ``` r
 disc_g |> get_igraph()
-#> IGRAPH 503552e DN-- 5 7 -- 
+#> IGRAPH 190a423 DN-- 5 7 -- 
 #> + attr: nodeid (v/n), name (v/c), label (v/c), mode (v/c), stance
 #> | (e/c), timestamp (e/n)
-#> + edges from 503552e (vertex names):
+#> + edges from 190a423 (vertex names):
 #> [1] actor1->statement1 actor1->statement1 actor1->statement2 actor1->statement1
 #> [5] actor2->statement2 actor3->statement1 actor3->statement2
 ```
 
-This makes it possible to use the entire ecosystem provided by igraph…
+This makes it possible to use the entire ecosystem provided by igraph:
 
 ``` r
-disc_g |> 
-  get_igraph() |> 
+disc_g |>
+  get_igraph() |>
   plot()
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
-… or tidygraph.
+Or tidygraph. You can extract tidygraph’s tbl\_graph object and then use
+its verbs:
 
 ``` r
-disc_g |> 
-  get_tbl_graph() |> 
+disc_g |>
+  get_tbl_graph() |>
   tidygraph::activate(nodes) |>
   dplyr::mutate(closeness = tidygraph::centrality_closeness())
 #> # A tbl_graph: 5 nodes and 7 edges
 #> #
 #> # A directed acyclic multigraph with 1 component
 #> #
-#> # A tibble: 5 × 5
+#> # Node Data: 5 × 5 (active)
 #>   nodeid name       label                  mode      closeness
 #>    <int> <chr>      <chr>                  <chr>         <dbl>
 #> 1      1 actor1     Actor 1                actor           0.5
@@ -152,13 +196,167 @@ disc_g |>
 #> 4      4 statement1 The fascists will lose statement     NaN  
 #> 5      5 statement2 Owls are great         statement     NaN  
 #> #
-#> # A tibble: 7 × 4
+#> # Edge Data: 7 × 4
 #>    from    to stance     timestamp 
 #>   <int> <int> <chr>      <date>    
 #> 1     1     4 support    2012-02-01
 #> 2     1     4 support    2013-02-01
 #> 3     1     5 irrelevant 2014-02-01
 #> # ℹ 4 more rows
+```
+
+Or maybe even better, you can use tidygraph verbs directly on
+discourse\_graph objects:
+
+``` r
+disc_g |>
+  tidygraph::activate(nodes) |>
+  dplyr::filter(mode == "actor") |>
+  tidygraph::activate(edges) |>
+  dplyr::filter(stance == "support")
+#>   ---------------------------------------- 
+#> A discourse graph with 3 actors and 2
+#>               statements 
+#>   ----------------------------------------
+#> [[1]]
+#> [1] 3
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> numeric(0)
+#> 
+#> [[4]]
+#> numeric(0)
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1" "actor2" "actor3"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"   "Actor 2"   "Actress 3"
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor" "actor" "actor"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> character(0)
+#> 
+#> [[9]][[4]]$timestamp
+#> Date of length 0
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0d1b8a8f8>
+#> 
+#> attr(,"active")
+#> [1] "edges"
+
+disc_g |>
+  tidygraph::activate(nodes) |>
+  dplyr::mutate(
+    degree = tidygraph::centrality_degree(),
+    name_upper = toupper(name)
+  )
+#>   ---------------------------------------- 
+#> A discourse graph with 3 actors and 2
+#>               statements 
+#>   ----------------------------------------
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0 0 0 1 2 2
+#> 
+#> [[4]]
+#> [1] 3 3 4 3 4 3 4
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> [[9]][[3]]$degree
+#>     actor1     actor2     actor3 statement1 statement2 
+#>          4          1          2          0          0 
+#> 
+#> [[9]][[3]]$name_upper
+#> [1] "ACTOR1"     "ACTOR2"     "ACTOR3"     "STATEMENT1" "STATEMENT2"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support"    "support"    "irrelevant" "support"    "opposition"
+#> [6] "support"    "support"   
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2012-02-01" "2013-02-01" "2014-02-01" "2014-04-01" "2016-02-01"
+#> [6] "2016-02-01" "2016-03-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0c8a65de0>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 ```
 
 ## Aggregating a graph
@@ -173,74 +371,157 @@ disc_g |> aggregate_discourse_graph()
 #> A aggregated discourse graph with 3 actors and 2
 #>               statements 
 #>   ----------------------------------------
-#> # A tbl_graph: 5 nodes and 5 edges
-#> #
-#> # A directed acyclic simple graph with 1 component
-#> #
-#> # A tibble: 5 × 4
-#>   nodeid name       label                  mode     
-#>    <int> <chr>      <chr>                  <chr>    
-#> 1      1 actor1     Actor 1                actor    
-#> 2      2 actor2     Actor 2                actor    
-#> 3      3 actor3     Actress 3              actor    
-#> 4      4 statement1 The fascists will lose statement
-#> 5      5 statement2 Owls are great         statement
-#> #
-#> # A tibble: 5 × 5
-#>    from    to stance     n_stances timestamp 
-#>   <int> <int> <chr>          <int> <date>    
-#> 1     1     4 support            3 2016-03-01
-#> 2     1     5 irrelevant         1 2016-03-01
-#> 3     2     5 opposition         1 2016-03-01
-#> # ℹ 2 more rows
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0 1 2 2
+#> 
+#> [[4]]
+#> [1] 3 4 4 3 4
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support"    "irrelevant" "opposition" "support"    "support"   
+#> 
+#> [[9]][[4]]$n_stances
+#> [1] 3 1 1 1 1
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2016-03-01" "2016-03-01" "2016-03-01" "2016-03-01" "2016-03-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0cd9117b8>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 ```
 
 ``` r
 disc_g |> aggregate_discourse_graph(keep_only_highest = TRUE) |> plot()
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
 ## Time slices of discourse graphs
 
 ``` r
 start_date <- "2012-01-01"
 end_date <- "2014-06-06"
-disc_g |> 
+disc_g |>
   time_slice_graph(start_date = start_date, end_date = end_date)
 #>   ---------------------------------------- 
 #> A discourse graph with 3 actors and 2
 #>               statements 
 #>   ----------------------------------------
-#> # A tbl_graph: 5 nodes and 4 edges
-#> #
-#> # A directed acyclic multigraph with 3 components
-#> #
-#> # A tibble: 5 × 4
-#>   nodeid name       label                  mode     
-#>    <int> <chr>      <chr>                  <chr>    
-#> 1      1 actor1     Actor 1                actor    
-#> 2      2 actor2     Actor 2                actor    
-#> 3      3 actor3     Actress 3              actor    
-#> 4      4 statement1 The fascists will lose statement
-#> 5      5 statement2 Owls are great         statement
-#> #
-#> # A tibble: 4 × 4
-#>    from    to stance     timestamp 
-#>   <int> <int> <chr>      <date>    
-#> 1     1     4 support    2012-02-01
-#> 2     1     4 support    2013-02-01
-#> 3     1     5 irrelevant 2014-02-01
-#> # ℹ 1 more row
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0 0 0
+#> 
+#> [[4]]
+#> [1] 3 3 4 3
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support"    "support"    "irrelevant" "support"   
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2012-02-01" "2013-02-01" "2014-02-01" "2014-04-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0d025fc30>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 ```
 
 ``` r
-disc_g |> 
-  time_slice_graph(start_date = start_date, end_date = end_date) |> 
+disc_g |>
+  time_slice_graph(start_date = start_date, end_date = end_date) |>
   plot()
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
 
 You can also create a list of time sliced graphs directly.
 
@@ -250,7 +531,7 @@ time_window <- months(48)
 ```
 
 ``` r
-disc_g |> 
+disc_g |>
   time_sliced_graph_list(time_window = time_window,
                          date_range = date_range,
                          step_interval = "year")
@@ -259,76 +540,198 @@ disc_g |>
 #> A discourse graph with 3 actors and 2
 #>               statements 
 #>   ----------------------------------------
-#> # A tbl_graph: 5 nodes and 2 edges
-#> #
-#> # A directed acyclic multigraph with 4 components
-#> #
-#> # A tibble: 5 × 4
-#>   nodeid name       label                  mode     
-#>    <int> <chr>      <chr>                  <chr>    
-#> 1      1 actor1     Actor 1                actor    
-#> 2      2 actor2     Actor 2                actor    
-#> 3      3 actor3     Actress 3              actor    
-#> 4      4 statement1 The fascists will lose statement
-#> 5      5 statement2 Owls are great         statement
-#> #
-#> # A tibble: 2 × 4
-#>    from    to stance  timestamp 
-#>   <int> <int> <chr>   <date>    
-#> 1     1     4 support 2012-02-01
-#> 2     1     4 support 2013-02-01
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0
+#> 
+#> [[4]]
+#> [1] 3 3
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support" "support"
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2012-02-01" "2013-02-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0d0a54498>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 #> 
 #> $`2013-01-01`
 #>   ---------------------------------------- 
 #> A discourse graph with 3 actors and 2
 #>               statements 
 #>   ----------------------------------------
-#> # A tbl_graph: 5 nodes and 4 edges
-#> #
-#> # A directed acyclic multigraph with 3 components
-#> #
-#> # A tibble: 5 × 4
-#>   nodeid name       label                  mode     
-#>    <int> <chr>      <chr>                  <chr>    
-#> 1      1 actor1     Actor 1                actor    
-#> 2      2 actor2     Actor 2                actor    
-#> 3      3 actor3     Actress 3              actor    
-#> 4      4 statement1 The fascists will lose statement
-#> 5      5 statement2 Owls are great         statement
-#> #
-#> # A tibble: 4 × 4
-#>    from    to stance     timestamp 
-#>   <int> <int> <chr>      <date>    
-#> 1     1     4 support    2012-02-01
-#> 2     1     4 support    2013-02-01
-#> 3     1     5 irrelevant 2014-02-01
-#> # ℹ 1 more row
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0 0 0
+#> 
+#> [[4]]
+#> [1] 3 3 4 3
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support"    "support"    "irrelevant" "support"   
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2012-02-01" "2013-02-01" "2014-02-01" "2014-04-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0d0d23e58>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 #> 
 #> $`2014-01-01`
 #>   ---------------------------------------- 
 #> A discourse graph with 3 actors and 2
 #>               statements 
 #>   ----------------------------------------
-#> # A tbl_graph: 5 nodes and 4 edges
-#> #
-#> # A directed acyclic multigraph with 3 components
-#> #
-#> # A tibble: 5 × 4
-#>   nodeid name       label                  mode     
-#>    <int> <chr>      <chr>                  <chr>    
-#> 1      1 actor1     Actor 1                actor    
-#> 2      2 actor2     Actor 2                actor    
-#> 3      3 actor3     Actress 3              actor    
-#> 4      4 statement1 The fascists will lose statement
-#> 5      5 statement2 Owls are great         statement
-#> #
-#> # A tibble: 4 × 4
-#>    from    to stance     timestamp 
-#>   <int> <int> <chr>      <date>    
-#> 1     1     4 support    2012-02-01
-#> 2     1     4 support    2013-02-01
-#> 3     1     5 irrelevant 2014-02-01
-#> # ℹ 1 more row
+#> [[1]]
+#> [1] 5
+#> 
+#> [[2]]
+#> [1] TRUE
+#> 
+#> [[3]]
+#> [1] 0 0 0 0
+#> 
+#> [[4]]
+#> [1] 3 3 4 3
+#> 
+#> [[5]]
+#> NULL
+#> 
+#> [[6]]
+#> NULL
+#> 
+#> [[7]]
+#> NULL
+#> 
+#> [[8]]
+#> NULL
+#> 
+#> [[9]]
+#> [[9]][[1]]
+#> [1] 1 0 1
+#> 
+#> [[9]][[2]]
+#> named list()
+#> 
+#> [[9]][[3]]
+#> [[9]][[3]]$nodeid
+#> [1] 1 2 3 4 5
+#> 
+#> [[9]][[3]]$name
+#> [1] "actor1"     "actor2"     "actor3"     "statement1" "statement2"
+#> 
+#> [[9]][[3]]$label
+#> [1] "Actor 1"                "Actor 2"                "Actress 3"             
+#> [4] "The fascists will lose" "Owls are great"        
+#> 
+#> [[9]][[3]]$mode
+#> [1] "actor"     "actor"     "actor"     "statement" "statement"
+#> 
+#> 
+#> [[9]][[4]]
+#> [[9]][[4]]$stance
+#> [1] "support"    "support"    "irrelevant" "support"   
+#> 
+#> [[9]][[4]]$timestamp
+#> [1] "2012-02-01" "2013-02-01" "2014-02-01" "2014-04-01"
+#> 
+#> 
+#> 
+#> [[10]]
+#> <environment: 0x55e0d0fa0808>
+#> 
+#> attr(,"active")
+#> [1] "nodes"
 ```
 
 ## Explode the graph
@@ -340,4 +743,4 @@ statements and stances. Easier to understand with an illustration:
 disc_g |> explode_graph() |> plot()
 ```
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-18-1.png" width="100%" />
